@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using FI.AtividadeEntrevista.DML;
+using WebAtividadeEntrevista.Models.Validators;
 
 namespace WebAtividadeEntrevista.Controllers
 {
@@ -38,6 +39,11 @@ namespace WebAtividadeEntrevista.Controllers
             }
             else
             {
+                if (!CPFValidator.IsValid(model.CPF) || CPFValidator.AlreadyExists(model.CPF, model.Id))
+                {
+                    Response.StatusCode = 400;
+                    return Json("CPF inválido.");
+                }
                 
                 model.Id = bo.Incluir(new Cliente()
                 {                    
@@ -74,6 +80,12 @@ namespace WebAtividadeEntrevista.Controllers
             }
             else
             {
+                if (!CPFValidator.IsValid(model.CPF) || CPFValidator.AlreadyExists(model.CPF, model.Id))
+                {
+                    Response.StatusCode = 400;
+                    return Json("CPF inválido.");
+                }
+
                 bo.Alterar(new Cliente()
                 {
                     Id = model.Id,
