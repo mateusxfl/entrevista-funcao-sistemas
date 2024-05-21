@@ -1,5 +1,7 @@
 ﻿
 $(document).ready(function () {
+    $('#formCadastro #CPF').mask('000.000.000-00', { reverse: true });
+
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
         $.ajax({

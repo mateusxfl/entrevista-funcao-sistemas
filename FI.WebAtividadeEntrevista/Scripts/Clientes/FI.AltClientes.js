@@ -1,5 +1,7 @@
 ﻿
 $(document).ready(function () {
+    $('#formCadastro #CPF').mask('000.000.000-00', { reverse: true });
+
     if (obj) {
         $('#formCadastro #Nome').val(obj.Nome);
         $('#formCadastro #CEP').val(obj.CEP);
