@@ -1,6 +1,10 @@
-﻿
+﻿// Lista de beneficiários.
+var arrBeneficiarios = []; // TODO: PREENCHER COM O QUE JA TEM DO BANCO.
+var lastId = 0;
+
 $(document).ready(function () {
     $('#formCadastro #CPF').mask('000.000.000-00', { reverse: true });
+    $('#beneficiarioForm #BeneficiarioCPF').mask('000.000.000-00', { reverse: true });
 
     if (obj) {
         $('#formCadastro #Nome').val(obj.Nome);
@@ -31,7 +35,8 @@ $(document).ready(function () {
                 "Cidade": $(this).find("#Cidade").val(),
                 "Logradouro": $(this).find("#Logradouro").val(),
                 "Telefone": $(this).find("#Telefone").val(),
-                "CPF": $(this).find("#CPF").val()
+                "CPF": $(this).find("#CPF").val(),
+                "Beneficiarios": arrBeneficiarios
             },
             error:
             function (r) {
@@ -48,7 +53,62 @@ $(document).ready(function () {
             }
         });
     })
-    
+
+    $('#addBeneficiarioBtn').click(function () {
+        $('#beneficiarioModal').modal('show');
+    });
+
+    $('#beneficiarioForm').submit(function (event) {
+        event.preventDefault();
+
+        debugger
+
+        var formData = {
+            ClienteId: $('#ClienteId').val(),
+            CPF: $('#BeneficiarioCPF').val(),
+            Nome: $('#BeneficiarioNome').val()
+        };
+
+        var beneficiarios = arrBeneficiarios.filter((beneficiario) => {
+            return beneficiario.CPF === formData.CPF;
+        });
+
+        if (beneficiarios.length != 0) {
+            // TODO: SE ID BUSCADO FOR IGUAL AO ID QUE TA ALTERANDO DEIXA ALTERAR O BENEFICIARIO, CASO NÃO MOSTRA A MENSAGEM DE CPF DUPLICADO.
+            debugger
+
+            if (beneficiarios[0].Id == $('#BeneficiarioAlterando').val()) {
+                alert('pode alterar');
+
+                // TODO: ALTERAR E COLOCAR NA TABELA.
+
+                $('#BeneficiarioNome').val('');
+            } else {
+                $('#alertMessage').text('Já existe um beneficiário com esse CPF para este cliente.');
+            }
+        } else {
+            $('#alertMessage').text('');
+            $("#btnAction").html('Incluir');
+
+            formData.Id = ++lastId, 
+            formData.State = "InMemory";
+            arrBeneficiarios.push(formData);
+
+            $('#BeneficiarioCPF').val('');
+            $('#BeneficiarioNome').val('');
+
+            var newRow = '<tr id="' + formData.Id + '">                                                                                                                                                 ' +
+                '             <td>' + formData.CPF + '</td>                                                                                                                                              ' +
+                '             <td>' + formData.Nome + '</td>                                                                                                                                             ' +
+                '             <td>                                                                                                                                                                       ' +
+                '                  <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="' + formData.Id + '">Alterar</button>' +
+                '                  <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="' + formData.Id + '">Excluir</button> ' +
+                '             </td>                                                                                                                                                                      ' +
+                '         </tr>                                                                                                                                                                          ';
+
+            $('#tabelaBeneficiarios tbody').append(newRow);
+        }
+    });
 })
 
 function ModalDialog(titulo, texto) {
@@ -73,4 +133,28 @@ function ModalDialog(titulo, texto) {
 
     $('body').append(texto);
     $('#' + random).modal('show');
+}
+
+function AlterarBeneficiario(id) {
+    var beneficiarioClicado = arrBeneficiarios.find(x => x.Id == id);
+
+    $('#BeneficiarioCPF').val(beneficiarioClicado.CPF);
+    $('#BeneficiarioNome').val(beneficiarioClicado.Nome);
+    $('#BeneficiarioAlterando').val(beneficiarioClicado.Id);
+
+    $("#btnAction").html('Alterar');
+}
+
+function DeletarBeneficiario(id) {
+    $('#tabelaBeneficiarios #' + id + '').remove();
+
+    debugger
+
+    // TOOD: REMOVER DO ARR CASO O BENEFICIARIO ESTEJA APENAS EM MEMORIA.
+
+    var beneficiarioParaRemover = arrBeneficiarios.filter((beneficiario) => {
+        return beneficiario.Id === id;
+    });
+
+    beneficiarioParaRemover[0].Action = "Remover";
 }
