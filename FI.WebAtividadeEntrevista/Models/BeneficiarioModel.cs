@@ -22,5 +22,10 @@ namespace WebAtividadeEntrevista.Models
         /// </summary>
         [Required]
         public string Nome { get; set; }
+
+        /// <summary>
+        /// Action (Register, Update, Remove)
+        /// </summary>
+        public string Action { get; set; }
     }    
 }

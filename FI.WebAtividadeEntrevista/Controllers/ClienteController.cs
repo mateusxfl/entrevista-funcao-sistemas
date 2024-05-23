@@ -54,7 +54,7 @@ namespace WebAtividadeEntrevista.Controllers
                         CPF = model.CPF,
                     });
 
-                    if (model.Beneficiarios != null)
+                    if (model.Beneficiarios.Count > 0)
                     {
                         foreach (BeneficiarioModel beneficiario in model.Beneficiarios)
                         {
@@ -72,7 +72,7 @@ namespace WebAtividadeEntrevista.Controllers
                                 erros.Add($"CPF {beneficiario.CPF} do cliente {beneficiario.Nome} é inválido.");
                         }
 
-                        if (erros != null)
+                        if (erros.Count > 0)
                         {
                             erros.Add("Cadastro parcialmente realizado.");
                             return Json(string.Join(Environment.NewLine, erros));
@@ -92,22 +92,22 @@ namespace WebAtividadeEntrevista.Controllers
         [HttpPost]
         public JsonResult Alterar(ClienteModel model)
         {
-            BoCliente bo = new BoCliente();
-       
+            BoCliente boCliente = new BoCliente();
+            BoBeneficiario boBeneficiario = new BoBeneficiario();
+
+            List<string> erros = new List<string>();
+
             if (!this.ModelState.IsValid)
             {
-                List<string> erros = (from item in ModelState.Values
-                                      from error in item.Errors
-                                      select error.ErrorMessage).ToList();
-
-                Response.StatusCode = 400;
-                return Json(string.Join(Environment.NewLine, erros));
+                erros = (from item in ModelState.Values
+                         from error in item.Errors
+                         select error.ErrorMessage).ToList();
             }
             else
             {
-                if (!CPFValidator.IsValid(model.CPF) && !CPFValidator.AlreadyExists(model.CPF, model.Id))
+                if (CPFValidator.IsValid(model.CPF) && !CPFValidator.AlreadyExists(model.CPF, model.Id))
                 {
-                    bo.Alterar(new Cliente()
+                    boCliente.Alterar(new Cliente()
                     {
                         Id = model.Id,
                         CEP = model.CEP,
@@ -122,14 +122,55 @@ namespace WebAtividadeEntrevista.Controllers
                         CPF = model.CPF
                     });
 
+                    if (model.Beneficiarios.Count > 0)
+                    {
+                        foreach (BeneficiarioModel beneficiario in model.Beneficiarios)
+                        {
+                            if(beneficiario.Action == "Remove") // Remove sem precisar verificar CPF, pois poderia ocorrer um update (alterando cpf) e logo em seguida um remove via modal.
+                            {
+                                boBeneficiario.Excluir(beneficiario.Id);
+                            } 
+                            else if (CPFValidator.IsValid(beneficiario.CPF)) // Valida o CPF antes de inserir ou alterar cada beneficiario (CPF duplicado já é validado no JS).
+                            {
+                                if (beneficiario.Action == "Register")
+                                {
+                                    boBeneficiario.Incluir(new Beneficiario()
+                                    {
+                                        CPF = beneficiario.CPF,
+                                        Nome = beneficiario.Nome,
+                                        ClienteId = model.Id
+                                    });
+                                } 
+                                else if (beneficiario.Action == "Update")
+                                {
+                                    boBeneficiario.Alterar(new Beneficiario()
+                                    {
+                                        Id = beneficiario.Id,
+                                        CPF = beneficiario.CPF,
+                                        Nome = beneficiario.Nome,
+                                        ClienteId = model.Id
+                                    });
+                                }
+                            }
+                            else
+                                erros.Add($"CPF {beneficiario.CPF} do cliente {beneficiario.Nome} é inválido.");
+                        }
+
+                        if (erros.Count > 0)
+                        {
+                            erros.Add("Cadastro parcialmente alterado.");
+                            return Json(string.Join(Environment.NewLine, erros));
+                        }
+                    }
+
                     return Json("Cadastro alterado com sucesso.");
                 }
                 else
-                {
-                    Response.StatusCode = 400;
-                    return Json("CPF inválido.");
-                }
+                    erros.Add($"CPF {model.CPF} do cliente {model.Nome} é inválido.");
             }
+
+            Response.StatusCode = 400;
+            return Json(string.Join(Environment.NewLine, erros));
         }
 
         [HttpGet]
@@ -141,7 +182,7 @@ namespace WebAtividadeEntrevista.Controllers
 
             List<BeneficiarioModel> beneficiarios = new List<BeneficiarioModel>();
 
-            if(cliente.Beneficiarios != null)
+            if(cliente.Beneficiarios.Count > 0)
             {
                 foreach (Beneficiario beneficiario in cliente.Beneficiarios)
                 {

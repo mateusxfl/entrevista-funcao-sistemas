@@ -54,7 +54,7 @@ $(document).ready(function () {
         };
 
         var index = arrBeneficiarios.findIndex(function (beneficiario) {
-            return beneficiario.CPF == formData.CPF;
+            return beneficiario.Id == $('#BeneficiarioAlterando').val();
         });
 
         if (index !== -1) {
