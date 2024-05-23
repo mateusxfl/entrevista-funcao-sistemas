@@ -97,7 +97,7 @@ $(document).ready(function () {
         } else {
             $("#btnAction").html('Incluir');
 
-            formData.Id = generateSimpleRandomId(),
+            formData.Id = generateSimpleRandomId();
             formData.Action = "Register";
             arrBeneficiarios.push(formData);
 

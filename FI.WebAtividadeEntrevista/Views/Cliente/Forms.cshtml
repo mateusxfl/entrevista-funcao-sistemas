@@ -94,7 +94,10 @@
 
 </form>
 
-<div id="data-container" data-items='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Beneficiarios))'></div>
+@if (Model != null)
+{
+    <div id="data-container" data-items='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Beneficiarios))'></div>
+}
 
 <!-- Modal Beneficiário -->
 <div class="modal fade" id="beneficiarioModal" tabindex="-1" role="dialog" aria-labelledby="beneficiarioModalLabel" aria-hidden="true">
@@ -147,23 +150,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var beneficiario in Model.Beneficiarios)
+                            @if (Model != null)
                             {
-                                <tr id="@beneficiario.Id">
-                                    <td>@beneficiario.CPF</td>
-                                    <td>@beneficiario.Nome</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="@beneficiario.Id">Alterar</button>
-                                        <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="@beneficiario.Id" style="margin-left: 10px">Excluir</button>
-                                    </td>
-                                </tr>
+                                foreach (var beneficiario in Model.Beneficiarios)
+                                {
+                                    <tr id="@beneficiario.Id">
+                                        <td>@beneficiario.CPF</td>
+                                        <td>@beneficiario.Nome</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="@beneficiario.Id">Alterar</button>
+                                            <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="@beneficiario.Id" style="margin-left: 10px">Excluir</button>
+                                        </td>
+                                    </tr>
+                                }
                             }
                         </tbody>
                     </table>
 
                     <input type="hidden" id="BeneficiarioAlterando" name="BeneficiarioAlterando" value="">
-                    <input type="hidden" id="ClienteId" name="ClienteId" value="@Model.Id">
-                </form>
+                    @if (Model != null)
+                    {
+                        <input type="hidden" id="ClienteId" name="ClienteId" value="@Model.Id">
+                    }
+                    </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
