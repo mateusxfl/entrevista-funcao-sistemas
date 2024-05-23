@@ -1,6 +1,7 @@
 ﻿
 // Lista de beneficiários.
 var arrBeneficiarios = [];
+var lastId = 0;
 console.log('VINDOS DO BANCO', arrBeneficiarios);
 
 $(document).ready(function () {
@@ -34,8 +35,7 @@ $(document).ready(function () {
             },
             success:
             function (r) {
-                ModalDialog("Sucesso!", r)
-                $("#formCadastro")[0].reset();
+                ModalDialog("Sucesso!", r, urlRetorno)
             }
         });
     })
@@ -78,7 +78,7 @@ $(document).ready(function () {
         } else {
             $("#btnAction").html('Incluir');
 
-            formData.Id = generateSimpleRandomId();
+            formData.Id = getNewId();
             arrBeneficiarios.push(formData);
 
             var newRow = '<tr id="' + formData.Id + '">                                                                                                                                                                          ' +
@@ -101,27 +101,30 @@ $(document).ready(function () {
     });
 })
 
-function ModalDialog(titulo, texto) {
+function ModalDialog(titulo, texto, urlRetorno) {
     var random = Math.random().toString().replace('.', '');
-    var texto = '<div id="' + random + '" class="modal fade">                                                               ' +
-        '        <div class="modal-dialog">                                                                                 ' +
-        '            <div class="modal-content">                                                                            ' +
-        '                <div class="modal-header">                                                                         ' +
-        '                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>         ' +
-        '                    <h4 class="modal-title">' + titulo + '</h4>                                                    ' +
-        '                </div>                                                                                             ' +
-        '                <div class="modal-body">                                                                           ' +
-        '                    <p>' + texto + '</p>                                                                           ' +
-        '                </div>                                                                                             ' +
-        '                <div class="modal-footer">                                                                         ' +
-        '                    <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>             ' +
-        '                                                                                                                   ' +
-        '                </div>                                                                                             ' +
-        '            </div><!-- /.modal-content -->                                                                         ' +
-        '  </div><!-- /.modal-dialog -->                                                                                    ' +
-        '</div> <!-- /.modal -->                                                                                        ';
+    var texto = '<div id="' + random + '" class="modal fade">                                                                                                                                          ' +
+        '        <div class="modal-dialog">                                                                                                                                                            ' +
+        '            <div class="modal-content">                                                                                                                                                       ' +
+        '                <div class="modal-header">                                                                                                                                                    ' +
+        '                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"' + (urlRetorno ? ' onclick="window.location.href=\'' + urlRetorno + '\'"' : '') + '>×</button>' +
+        '                    <h4 class="modal-title">' + titulo + '</h4>                                                                                                                               ' +
+        '                </div>                                                                                                                                                                        ' +
+        '                <div class="modal-body">                                                                                                                                                      ' +
+        '                    <p>' + texto + '</p>                                                                                                                                                      ' +
+        '                </div>                                                                                                                                                                        ' +
+        '                <div class="modal-footer">                                                                                                                                                    ' +
+        '                    <button type="button" class="btn btn-default" data-dismiss="modal"' + (urlRetorno ? ' onclick="window.location.href=\'' + urlRetorno + '\'"' : '') + '>Fechar</button>    ' +
+        '                </div>                                                                                                                                                                        ' +
+        '            </div><!-- /.modal-content -->                                                                                                                                                    ' +
+        '  </div><!-- /.modal-dialog -->                                                                                                                                                               ' +
+        '</div> <!-- /.modal -->                                                                                                                                                                       ';
 
     $('body').append(texto);
+    $('#' + random).modal({
+        backdrop: 'static', 
+        keyboard: false     
+    });
     $('#' + random).modal('show');
 }
 
@@ -143,13 +146,12 @@ function DeletarBeneficiario(id) {
     });
 
     if (index !== -1) {
-        var beneficiarioParaRemover = arrBeneficiarios[index];
         arrBeneficiarios.splice(index, 1);
     }
 
     console.log('REMOÇÃO', arrBeneficiarios);
 }
 
-function generateSimpleRandomId() {
-    return 'id-' + Math.random().toString(36).substr(2, 9);
+function getNewId() {
+    return ++lastId;
 }

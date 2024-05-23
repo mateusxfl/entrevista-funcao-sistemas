@@ -1,11 +1,10 @@
 ﻿using FI.AtividadeEntrevista.BLL;
-using WebAtividadeEntrevista.Models;
+using FI.AtividadeEntrevista.DML;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
-using FI.AtividadeEntrevista.DML;
+using WebAtividadeEntrevista.Models;
 using WebAtividadeEntrevista.Models.Validators;
 
 namespace WebAtividadeEntrevista.Controllers
@@ -26,42 +25,68 @@ namespace WebAtividadeEntrevista.Controllers
         [HttpPost]
         public JsonResult Incluir(ClienteModel model)
         {
-            BoCliente bo = new BoCliente();
-            
+            BoCliente boCliente = new BoCliente();
+            BoBeneficiario boBeneficiario = new BoBeneficiario();
+
+            List<string> erros = new List<string>();
+
             if (!this.ModelState.IsValid)
             {
-                List<string> erros = (from item in ModelState.Values
-                                      from error in item.Errors
-                                      select error.ErrorMessage).ToList();
-
-                Response.StatusCode = 400;
-                return Json(string.Join(Environment.NewLine, erros));
+                erros = (from item in ModelState.Values
+                         from error in item.Errors
+                         select error.ErrorMessage).ToList();
             }
             else
             {
-                if (!CPFValidator.IsValid(model.CPF) || CPFValidator.AlreadyExists(model.CPF, model.Id))
+                if (CPFValidator.IsValid(model.CPF) && !CPFValidator.AlreadyExists(model.CPF, model.Id))
                 {
-                    Response.StatusCode = 400;
-                    return Json("CPF inválido.");
-                }
-                
-                model.Id = bo.Incluir(new Cliente()
-                {                    
-                    CEP = model.CEP,
-                    Cidade = model.Cidade,
-                    Email = model.Email,
-                    Estado = model.Estado,
-                    Logradouro = model.Logradouro,
-                    Nacionalidade = model.Nacionalidade,
-                    Nome = model.Nome,
-                    Sobrenome = model.Sobrenome,
-                    Telefone = model.Telefone,
-                    CPF = model.CPF,
-                });
+                    model.Id = boCliente.Incluir(new Cliente()
+                    {
+                        CEP = model.CEP,
+                        Cidade = model.Cidade,
+                        Email = model.Email,
+                        Estado = model.Estado,
+                        Logradouro = model.Logradouro,
+                        Nacionalidade = model.Nacionalidade,
+                        Nome = model.Nome,
+                        Sobrenome = model.Sobrenome,
+                        Telefone = model.Telefone,
+                        CPF = model.CPF,
+                    });
 
-           
-                return Json("Cadastro efetuado com sucesso");
+                    if (model.Beneficiarios != null)
+                    {
+                        foreach (BeneficiarioModel beneficiario in model.Beneficiarios)
+                        {
+                            // Valida o CPF antes de inserir cada beneficiario (CPF duplicado já é validado no JS).
+                            if (CPFValidator.IsValid(beneficiario.CPF))
+                            {
+                                boBeneficiario.Incluir(new Beneficiario()
+                                {
+                                    CPF = beneficiario.CPF,
+                                    Nome = beneficiario.Nome,
+                                    ClienteId = model.Id
+                                });
+                            }
+                            else
+                                erros.Add($"CPF {beneficiario.CPF} do cliente {beneficiario.Nome} é inválido.");
+                        }
+
+                        if (erros != null)
+                        {
+                            erros.Add("Cadastro parcialmente realizado.");
+                            return Json(string.Join(Environment.NewLine, erros));
+                        }
+                    }
+                    
+                    return Json("Cadastro efetuado com sucesso.");
+                }
+                else
+                    erros.Add($"CPF {model.CPF} do cliente {model.Nome} é inválido.");
             }
+
+            Response.StatusCode = 400;
+            return Json(string.Join(Environment.NewLine, erros));
         }
 
         [HttpPost]
@@ -80,28 +105,30 @@ namespace WebAtividadeEntrevista.Controllers
             }
             else
             {
-                if (!CPFValidator.IsValid(model.CPF) || CPFValidator.AlreadyExists(model.CPF, model.Id))
+                if (!CPFValidator.IsValid(model.CPF) && !CPFValidator.AlreadyExists(model.CPF, model.Id))
+                {
+                    bo.Alterar(new Cliente()
+                    {
+                        Id = model.Id,
+                        CEP = model.CEP,
+                        Cidade = model.Cidade,
+                        Email = model.Email,
+                        Estado = model.Estado,
+                        Logradouro = model.Logradouro,
+                        Nacionalidade = model.Nacionalidade,
+                        Nome = model.Nome,
+                        Sobrenome = model.Sobrenome,
+                        Telefone = model.Telefone,
+                        CPF = model.CPF
+                    });
+
+                    return Json("Cadastro alterado com sucesso.");
+                }
+                else
                 {
                     Response.StatusCode = 400;
                     return Json("CPF inválido.");
                 }
-
-                bo.Alterar(new Cliente()
-                {
-                    Id = model.Id,
-                    CEP = model.CEP,
-                    Cidade = model.Cidade,
-                    Email = model.Email,
-                    Estado = model.Estado,
-                    Logradouro = model.Logradouro,
-                    Nacionalidade = model.Nacionalidade,
-                    Nome = model.Nome,
-                    Sobrenome = model.Sobrenome,
-                    Telefone = model.Telefone,
-                    CPF = model.CPF
-                });
-                               
-                return Json("Cadastro alterado com sucesso");
             }
         }
 

@@ -47,7 +47,7 @@ namespace FI.AtividadeEntrevista.DAL
             parametros.Add(new System.Data.SqlClient.SqlParameter("Id", Id));
 
             DataSet ds = base.Consultar("FI_SP_ConsCliente", parametros);
-            List<DML.Cliente> cli = ConverterConsCliente(ds);
+            List<DML.Cliente> cli = ConverterComBeneficiario(ds);
 
             return cli.FirstOrDefault();
         }
@@ -164,7 +164,7 @@ namespace FI.AtividadeEntrevista.DAL
             return lista;
         }
 
-        private List<DML.Cliente> ConverterConsCliente(DataSet ds)
+        private List<DML.Cliente> ConverterComBeneficiario(DataSet ds)
         {
             List<DML.Cliente> lista = new List<DML.Cliente>();
             if (ds != null && ds.Tables != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
