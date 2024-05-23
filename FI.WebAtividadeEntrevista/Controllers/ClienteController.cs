@@ -54,7 +54,7 @@ namespace WebAtividadeEntrevista.Controllers
                         CPF = model.CPF,
                     });
 
-                    if (model.Beneficiarios.Count > 0)
+                    if (model.Beneficiarios != null)
                     {
                         foreach (BeneficiarioModel beneficiario in model.Beneficiarios)
                         {
@@ -82,7 +82,7 @@ namespace WebAtividadeEntrevista.Controllers
                     return Json("Cadastro efetuado com sucesso.");
                 }
                 else
-                    erros.Add($"CPF {model.CPF} do cliente {model.Nome} é inválido.");
+                    erros.Add($"CPF {model.CPF} do cliente {model.Nome} é inválido ou já esta cadastrado no sistema.");
             }
 
             Response.StatusCode = 400;

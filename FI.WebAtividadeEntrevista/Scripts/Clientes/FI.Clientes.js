@@ -5,8 +5,10 @@ var lastId = 0;
 console.log('VINDOS DO BANCO', arrBeneficiarios);
 
 $(document).ready(function () {
-    $('#formCadastro #CPF').mask('000.000.000-00', { reverse: true });
-    $('#beneficiarioForm #BeneficiarioCPF').mask('000.000.000-00', { reverse: true });
+    $('#formCadastro #CPF').mask('000.000.000-00');
+    $('#beneficiarioForm #BeneficiarioCPF').mask('000.000.000-00');
+    $('#formCadastro #Telefone').mask('(00) 00000-0000');
+    $('#formCadastro #CEP').mask('00000-000');
 
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
@@ -53,6 +55,17 @@ $(document).ready(function () {
             Nome: $('#BeneficiarioNome').val()
         };
 
+        // Verifica se algum beneficiário diferente do beneficiário em edição já possui o mesmo CPF.
+        var cpfDuplicado = arrBeneficiarios.some(function (beneficiario) {
+            return beneficiario.CPF == formData.CPF && beneficiario.Id != $('#BeneficiarioAlterando').val();
+        });
+
+        if (cpfDuplicado) {
+            $('#alertMessage').text('Já existe um beneficiário com esse CPF para este cliente.');
+            return;
+        }
+
+        // Busca o index do beneficiario que vai alterar.
         var index = arrBeneficiarios.findIndex(function (beneficiario) {
             return beneficiario.Id == $('#BeneficiarioAlterando').val();
         });
@@ -60,23 +73,19 @@ $(document).ready(function () {
         if (index !== -1) {
             var beneficiarioParaEditar = arrBeneficiarios[index];
 
-            // Validação para permitir CPF "duplicar" no cenário em que a atualização se trata do beneficiário que já tem esse CPF.
-            if (beneficiarioParaEditar.Id == $('#BeneficiarioAlterando').val()) {
-                $("#btnAction").html('Incluir');
+            $("#btnAction").html('Incluir');
+            $("#btnAction").removeClass('btn-warning').addClass('btn-success');
 
-                beneficiarioParaEditar.CPF = formData.CPF;
-                beneficiarioParaEditar.Nome = formData.Nome;
+            beneficiarioParaEditar.CPF = formData.CPF;
+            beneficiarioParaEditar.Nome = formData.Nome;
 
-                $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(1)').text(beneficiarioParaEditar.CPF);
-                $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(2)').text(beneficiarioParaEditar.Nome);
+            $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(1)').text(beneficiarioParaEditar.CPF);
+            $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(2)').text(beneficiarioParaEditar.Nome);
 
-                console.log('ALTERADO', arrBeneficiarios);
-            } else {
-                $('#alertMessage').text('Já existe um beneficiário com esse CPF para este cliente.');
-                return;
-            }
+            console.log('ALTERADO', arrBeneficiarios);
         } else {
             $("#btnAction").html('Incluir');
+            $("#btnAction").removeClass('btn-warning').addClass('btn-success');
 
             formData.Id = getNewId();
             arrBeneficiarios.push(formData);
@@ -98,6 +107,7 @@ $(document).ready(function () {
         $('#BeneficiarioCPF').val('');
         $('#BeneficiarioNome').val('');
         $('#alertMessage').text('');
+        $('#BeneficiarioAlterando').val('');
     });
 })
 
@@ -136,6 +146,7 @@ function AlterarBeneficiario(id) {
     $('#BeneficiarioAlterando').val(beneficiarioClicado.Id);
 
     $("#btnAction").html('Alterar');
+    $("#btnAction").removeClass('btn-success').addClass('btn-warning');
 }
 
 function DeletarBeneficiario(id) {
