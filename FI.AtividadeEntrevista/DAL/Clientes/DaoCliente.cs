@@ -1,10 +1,7 @@
-﻿using System;
+﻿using FI.AtividadeEntrevista.DML;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FI.AtividadeEntrevista.DML;
 
 namespace FI.AtividadeEntrevista.DAL
 {
@@ -50,7 +47,7 @@ namespace FI.AtividadeEntrevista.DAL
             parametros.Add(new System.Data.SqlClient.SqlParameter("Id", Id));
 
             DataSet ds = base.Consultar("FI_SP_ConsCliente", parametros);
-            List<DML.Cliente> cli = Converter(ds);
+            List<DML.Cliente> cli = ConverterConsCliente(ds);
 
             return cli.FirstOrDefault();
         }
@@ -162,6 +159,47 @@ namespace FI.AtividadeEntrevista.DAL
                     cli.CPF = row.Field<string>("CPF");
                     lista.Add(cli);
                 }
+            }
+
+            return lista;
+        }
+
+        private List<DML.Cliente> ConverterConsCliente(DataSet ds)
+        {
+            List<DML.Cliente> lista = new List<DML.Cliente>();
+            if (ds != null && ds.Tables != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+            {
+                DML.Cliente cli = new DML.Cliente();
+                DataRow row = ds.Tables[0].Rows[0];
+
+                cli.Id = row.Field<long>("Id");
+                cli.CEP = row.Field<string>("CEP");
+                cli.Cidade = row.Field<string>("Cidade");
+                cli.Email = row.Field<string>("Email");
+                cli.Estado = row.Field<string>("Estado");
+                cli.Logradouro = row.Field<string>("Logradouro");
+                cli.Nacionalidade = row.Field<string>("Nacionalidade");
+                cli.Nome = row.Field<string>("Nome");
+                cli.Sobrenome = row.Field<string>("Sobrenome");
+                cli.Telefone = row.Field<string>("Telefone");
+                cli.CPF = row.Field<string>("CPF");
+
+                // Mapeamento beneficiário.
+                cli.Beneficiarios = new List<DML.Beneficiario>();
+                foreach (DataRow rowBeneficiario in ds.Tables[0].Rows)
+                {
+                    cli.Beneficiarios.Add(
+                        new Beneficiario
+                        {
+                            Id = rowBeneficiario.Field<long>("B_ID"),
+                            ClienteId = rowBeneficiario.Field<long>("Id"),
+                            CPF = rowBeneficiario.Field<string>("B_CPF"),
+                            Nome = rowBeneficiario.Field<string>("B_NOME")
+                        }
+                    );
+                }
+
+                lista.Add(cli);
             }
 
             return lista;

@@ -140,6 +140,17 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach (var beneficiario in Model.Beneficiarios)
+                            {
+                                <tr id="@beneficiario.Id">
+                                    <td>@beneficiario.CPF</td>
+                                    <td>@beneficiario.Nome</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="@beneficiario.Id">Alterar</button>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="@beneficiario.Id">Excluir</button>
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
 

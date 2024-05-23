@@ -112,6 +112,22 @@ namespace WebAtividadeEntrevista.Controllers
             Cliente cliente = bo.Consultar(id);
             Models.ClienteModel model = null;
 
+            List<BeneficiarioModel> beneficiarios = new List<BeneficiarioModel>();
+
+            if(cliente.Beneficiarios != null)
+            {
+                foreach (Beneficiario beneficiario in cliente.Beneficiarios)
+                {
+                    beneficiarios.Add(new BeneficiarioModel
+                    {
+                        Id = beneficiario.Id,
+                        ClienteId = beneficiario.ClienteId,
+                        CPF = beneficiario.CPF,
+                        Nome = beneficiario.Nome
+                    });
+                }
+            }
+
             if (cliente != null)
             {
                 model = new ClienteModel()
@@ -126,7 +142,8 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = cliente.Nome,
                     Sobrenome = cliente.Sobrenome,
                     Telefone = cliente.Telefone,
-                    CPF = cliente.CPF
+                    CPF = cliente.CPF,
+                    Beneficiarios = beneficiarios,
                 };
 
             
