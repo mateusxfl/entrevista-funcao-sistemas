@@ -1,6 +1,8 @@
 ﻿// Lista de beneficiários.
-var arrBeneficiarios = []; // TODO: PREENCHER COM O QUE JA TEM DO BANCO.
-var lastId = 0;
+var dataContainer = document.getElementById('data-container');
+var arrBeneficiarios = JSON.parse(dataContainer.getAttribute('data-items'));
+
+console.log('VINDOS DO BANCO', arrBeneficiarios);
 
 $(document).ready(function () {
     $('#formCadastro #CPF').mask('000.000.000-00', { reverse: true });
@@ -60,54 +62,62 @@ $(document).ready(function () {
 
     $('#beneficiarioForm').submit(function (event) {
         event.preventDefault();
-
-        debugger
-
+        
         var formData = {
             ClienteId: $('#ClienteId').val(),
             CPF: $('#BeneficiarioCPF').val(),
             Nome: $('#BeneficiarioNome').val()
         };
 
-        var beneficiarios = arrBeneficiarios.filter((beneficiario) => {
-            return beneficiario.CPF === formData.CPF;
+        var index = arrBeneficiarios.findIndex(function (beneficiario) {
+            return beneficiario.CPF == formData.CPF && beneficiario.Action != "Remove";
         });
 
-        if (beneficiarios.length != 0) {
-            // TODO: SE ID BUSCADO FOR IGUAL AO ID QUE TA ALTERANDO DEIXA ALTERAR O BENEFICIARIO, CASO NÃO MOSTRA A MENSAGEM DE CPF DUPLICADO.
-            debugger
+        if (index !== -1) {
+            var beneficiarioParaEditar = arrBeneficiarios[index];
 
-            if (beneficiarios[0].Id == $('#BeneficiarioAlterando').val()) {
-                alert('pode alterar');
+            // Validação para permitir CPF "duplicar" no cenário em que a atualização se trata do beneficiário que já tem esse CPF.
+            if (beneficiarioParaEditar.Id == $('#BeneficiarioAlterando').val()) {
+                $("#btnAction").html('Incluir');
 
-                // TODO: ALTERAR E COLOCAR NA TABELA.
+                beneficiarioParaEditar.CPF = formData.CPF;
+                beneficiarioParaEditar.Nome = formData.Nome;
+                
+                $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(1)').text(beneficiarioParaEditar.CPF);
+                $('#tabelaBeneficiarios #' + beneficiarioParaEditar.Id).find('td:nth-child(2)').text(beneficiarioParaEditar.Nome);
 
-                $('#BeneficiarioNome').val('');
+                // Verifica se está alterando um registro em memória ou do banco de dados.
+                beneficiarioParaEditar.Action = beneficiarioParaEditar.Action === "Register" ? "Register" : "Update";
+                
+                console.log('ALTERADO', arrBeneficiarios);
             } else {
                 $('#alertMessage').text('Já existe um beneficiário com esse CPF para este cliente.');
+                return;
             }
         } else {
-            $('#alertMessage').text('');
             $("#btnAction").html('Incluir');
 
-            formData.Id = ++lastId, 
-            formData.State = "InMemory";
+            formData.Id = generateSimpleRandomId(),
+            formData.Action = "Register";
             arrBeneficiarios.push(formData);
 
-            $('#BeneficiarioCPF').val('');
-            $('#BeneficiarioNome').val('');
-
-            var newRow = '<tr id="' + formData.Id + '">                                                                                                                                                 ' +
-                '             <td>' + formData.CPF + '</td>                                                                                                                                              ' +
-                '             <td>' + formData.Nome + '</td>                                                                                                                                             ' +
-                '             <td>                                                                                                                                                                       ' +
-                '                  <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="' + formData.Id + '">Alterar</button>' +
-                '                  <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="' + formData.Id + '">Excluir</button> ' +
-                '             </td>                                                                                                                                                                      ' +
-                '         </tr>                                                                                                                                                                          ';
+            var newRow = '<tr id="' + formData.Id + '">                                                                                                                                                                          ' +
+                '             <td>' + formData.CPF + '</td>                                                                                                                                                                      ' +
+                '             <td>' + formData.Nome + '</td>                                                                                                                                                                     ' +
+                '             <td>                                                                                                                                                                                               ' +
+                '                  <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="' + formData.Id + '">Alterar</button>                          ' +
+                '                  <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="' + formData.Id + '" style="margin-left: 10px">Excluir</button> ' +
+                '             </td>                                                                                                                                                                                              ' +
+                '         </tr>                                                                                                                                                                                                  ';
 
             $('#tabelaBeneficiarios tbody').append(newRow);
+
+            console.log('CADASTRADO', arrBeneficiarios);
         }
+
+        $('#BeneficiarioCPF').val('');
+        $('#BeneficiarioNome').val('');
+        $('#alertMessage').text('');
     });
 })
 
@@ -146,15 +156,25 @@ function AlterarBeneficiario(id) {
 }
 
 function DeletarBeneficiario(id) {
-    $('#tabelaBeneficiarios #' + id + '').remove();
-
-    debugger
-
-    // TOOD: REMOVER DO ARR CASO O BENEFICIARIO ESTEJA APENAS EM MEMORIA.
-
-    var beneficiarioParaRemover = arrBeneficiarios.filter((beneficiario) => {
-        return beneficiario.Id === id;
+    $('#tabelaBeneficiarios #' + id).remove();
+    
+    var index = arrBeneficiarios.findIndex(function (beneficiario) {
+        return beneficiario.Id == id;
     });
 
-    beneficiarioParaRemover[0].Action = "Remover";
+    if (index !== -1) {
+        var beneficiarioParaRemover = arrBeneficiarios[index];
+
+        if (beneficiarioParaRemover.Action === "Register") {
+            arrBeneficiarios.splice(index, 1);
+        } else {
+            beneficiarioParaRemover.Action = "Remove";
+        }
+    }
+
+    console.log('REMOÇÃO', arrBeneficiarios);
+}
+
+function generateSimpleRandomId() {
+    return 'id-' + Math.random().toString(36).substr(2, 9);
 }

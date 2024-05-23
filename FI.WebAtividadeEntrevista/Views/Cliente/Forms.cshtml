@@ -94,16 +94,23 @@
 
 </form>
 
+<div id="data-container" data-items='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Beneficiarios))'></div>
 
 <!-- Modal Beneficiário -->
 <div class="modal fade" id="beneficiarioModal" tabindex="-1" role="dialog" aria-labelledby="beneficiarioModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="beneficiarioModalLabel">Beneficiários</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <div class="row">
+                    <div class="col-md-10">
+                        <h4 class="modal-title" id="beneficiarioModalLabel">Beneficiários</h4>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
             </div>
             <div class="modal-body">
                 <form id="beneficiarioForm">
@@ -134,9 +141,9 @@
                     <table class="table" id="tabelaBeneficiarios">
                         <thead>
                             <tr>
-                                <th>CPF</th>
-                                <th>NOME</th>
-                                <th></th>
+                                <th style="width: 30%;">CPF</th>
+                                <th style="width: 30%;">NOME</th>
+                                <th style="width: 40%;"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -147,7 +154,7 @@
                                     <td>@beneficiario.Nome</td>
                                     <td>
                                         <button type="button" class="btn btn-sm btn-primary" onclick="AlterarBeneficiario(this.value)" id="editBeneficiarioBtn" value="@beneficiario.Id">Alterar</button>
-                                        <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="@beneficiario.Id">Excluir</button>
+                                        <button type="button" class="btn btn-sm btn-primary" onclick="DeletarBeneficiario(this.value)" id="delBeneficiarioBtn" value="@beneficiario.Id" style="margin-left: 10px">Excluir</button>
                                     </td>
                                 </tr>
                             }
